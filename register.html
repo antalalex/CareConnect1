@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareConect - Creare cont medic</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .login-line{display:none!important;}
+    .register-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .register-link-inline{text-align:center;margin-top:18px;font-size:14px;color:#64748b;}
+    .register-link-inline a{color:#2563eb;text-decoration:none;font-weight:800;}
+    .success-message{display:none;text-align:center;padding:34px 18px;}
+    .success-icon{width:70px;height:70px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:#eff6ff;color:#2563eb;font-size:42px;font-weight:900;}
+    .success-message h2{color:#2563eb;font-size:28px;margin:0 0 10px;}
+    .success-message p{margin:0;color:#2563eb;font-weight:700;}
+    @media(max-width:750px){.register-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body class="login-page">
+  <section class="login-shell">
+    <div class="login-visual">
+      <div class="login-logo">CareConect</div>
+      <h1>Creează cont medic</h1>
+      <p>Completează datele pentru a accesa platforma de monitorizare medicală în timp real.</p>
+    </div>
+
+    <form id="registerForm" class="login-form">
+      <div id="registerFields">
+        <h2>Creare cont</h2>
+        <p>Înregistrează un cont nou pentru platforma CareConect.</p>
+
+        <div class="register-grid">
+          <div>
+            <label>Nume complet</label>
+            <input type="text" id="regNume" placeholder="Dr. Andrei Ionescu" required />
+          </div>
+          <div>
+            <label>Specializare</label>
+            <input type="text" id="regSpec" placeholder="Cardiologie" required />
+          </div>
+        </div>
+
+        <label>Telefon</label>
+        <input type="text" id="regTel" placeholder="0722000000" required />
+
+        <label>Email medic</label>
+        <input type="email" id="regEmail" placeholder="medic@email.com" required />
+
+        <label>Parolă</label>
+        <input type="password" id="regParola" placeholder="••••••••" required />
+
+        <label>Confirmă parola</label>
+        <input type="password" id="regParola2" placeholder="••••••••" required />
+
+        <div id="regError" style="color:#dc2626;font-size:13px;margin-top:8px;display:none;"></div>
+
+        <button type="button" id="regBtn" onclick="doRegister()">Creează cont</button>
+
+        <div class="register-link-inline">
+          Ai deja cont? <a href="login.html">Autentifică-te</a>
+        </div>
+      </div>
+
+      <div id="successMessage" class="success-message">
+        <div class="success-icon">✓</div>
+        <h2>Cont creat cu succes!</h2>
+        <p>Vei fi redirecționat către pagina de autentificare...</p>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    const BASE_URL = "https://careconnectapi2026-crc6ehajfgbvc3c3.polandcentral-01.azurewebsites.net";
+    async function proxyFetch(url, options = {}) {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      return fetch(proxyUrl, options);
+    }
+
+    async function doRegister() {
+      const nume   = document.getElementById("regNume").value.trim();
+      const spec   = document.getElementById("regSpec").value.trim();
+      const tel    = document.getElementById("regTel").value.trim();
+      const email  = document.getElementById("regEmail").value.trim();
+      const parola = document.getElementById("regParola").value.trim();
+      const parola2= document.getElementById("regParola2").value.trim();
+      const btn    = document.getElementById("regBtn");
+      const err    = document.getElementById("regError");
+
+      if (!nume || !spec || !tel || !email || !parola) {
+        err.textContent = "Completează toate câmpurile!";
+        err.style.display = "block"; return;
+      }
+      if (parola !== parola2) {
+        err.textContent = "Parolele nu coincid!";
+        err.style.display = "block"; return;
+      }
+
+      btn.textContent = "Se creează contul...";
+      btn.disabled = true;
+      err.style.display = "none";
+
+      try {
+        const url = `${BASE_URL}/api/doctori/register?nume=${encodeURIComponent(nume)}&specializare=${encodeURIComponent(spec)}&telefon=${encodeURIComponent(tel)}&email=${encodeURIComponent(email)}&parola=${encodeURIComponent(parola)}`;
+        const r = await proxyFetch(url, { method: "POST" });
+
+        if (r.ok) {
+          document.getElementById("registerFields").style.display = "none";
+          document.getElementById("successMessage").style.display = "block";
+          setTimeout(() => window.location.href = "login.html", 2200);
+        } else {
+          const body = await r.text();
+          err.textContent = body.includes("email") ? "Email-ul este deja folosit!" : "Eroare la creare cont.";
+          err.style.display = "block";
+          btn.textContent = "Creează cont";
+          btn.disabled = false;
+        }
+      } catch(e) {
+        err.textContent = "Eroare conexiune. Încearcă din nou.";
+        err.style.display = "block";
+        btn.textContent = "Creează cont";
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

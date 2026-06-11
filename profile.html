@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareConect - Profil Medic</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="url(#hgrad)"/><defs><linearGradient id="hgrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><path d="M24 36s-11-7.5-11-14a7 7 0 0 1 11-5.74A7 7 0 0 1 35 22c0 6.5-11 14-11 14z" fill="white"/><polyline points="17,22 20,22 22,18 24,26 26,20 28,22 31,22" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div>
+        <h1>CareConect</h1>
+        <p>Monitorizare medicală în timp real pentru puls, temperatură și ECG.</p>
+      </div>
+    </div>
+    <nav class="menu">
+      <a href="index.html">Pacienți</a>
+      <a href="alerts.html">Alerte</a>
+      <a href="history.html">Istoric pacient</a>
+      <a href="#" onclick="logout(); return false;">Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h2>Profil medic</h2>
+        <p>Detaliile contului tău de medic.</p>
+      </div>
+            <a href="profile.html" class="profile-header-btn" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:14px;padding:10px 18px;text-decoration:none;box-shadow:var(--shadow)">
+        <div id="avatarHeader" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:white">M</div>
+        <div>
+          <strong id="headerNume" style="display:block;font-size:14px;color:var(--text);font-weight:800">Medic</strong>
+          <span style="font-size:11px;color:var(--muted)">ID: <span id="headerId">--</span></span>
+        </div>
+      </a>
+    </header>
+
+    <section class="panel" style="max-width:600px;margin:0 auto">
+      <div style="display:flex;flex-direction:column;align-items:center;padding:32px 24px;border-bottom:1px solid var(--border)">
+        <div id="avatar" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:white;margin-bottom:16px">M</div>
+        <h2 id="profileNume" style="margin:0 0 6px;font-size:24px;color:var(--text)">--</h2>
+        <span style="background:#eff6ff;color:#2563eb;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:800">MEDIC ACTIV</span>
+      </div>
+
+      <div style="padding:24px">
+        <div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:16px;letter-spacing:1px">INFORMAȚII CONT</div>
+
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">ID Medic</div>
+          <div id="profileId" style="font-size:17px;font-weight:700;color:var(--text)">--</div>
+        </div>
+        <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Nume</div>
+          <div id="profileNume2" style="font-size:17px;font-weight:700;color:var(--text)">--</div>
+        </div>
+        <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Email</div>
+          <div id="profileEmail" style="font-size:17px;font-weight:700;color:var(--text)">--</div>
+        </div>
+        <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+
+        <div style="margin-bottom:32px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Pacienți monitorizați</div>
+          <div id="profilePacienti" style="font-size:17px;font-weight:700;color:var(--text)">--</div>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin-bottom:32px"></div>
+
+        <button onclick="logout()" style="width:100%;height:48px;background:white;border:2px solid #2563eb;color:#2563eb;font-size:15px;font-weight:800;border-radius:10px;cursor:pointer">Deconectare</button>
+      </div>
+    </section>
+  </main>
+
+    <script>
+    (function() {
+      const nume = localStorage.getItem("cc_medic_nume") || "Medic";
+      const id   = localStorage.getItem("cc_medic_id") || "--";
+      const el = document.getElementById("headerNume");
+      const av = document.getElementById("avatarHeader");
+      const hid = document.getElementById("headerId");
+      if (el) el.textContent = nume;
+      if (av) av.textContent = nume.charAt(0).toUpperCase();
+      if (hid) hid.textContent = id;
+    })();
+  </script>
+  <script>
+    const BASE_URL = "https://careconnectapi2026-crc6ehajfgbvc3c3.polandcentral-01.azurewebsites.net";
+    if (!localStorage.getItem("cc_medic_id")) window.location.href = "login.html";
+
+    function logout() {
+      localStorage.removeItem("cc_medic_id");
+      localStorage.removeItem("cc_medic_nume");
+      localStorage.removeItem("cc_medic_email");
+      window.location.href = "login.html";
+    }
+
+    function updateTime() {
+      const now = new Date();
+      const t = document.getElementById("time");
+      const d = document.getElementById("todayDate");
+      if (t) t.textContent = now.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
+      if (d) d.textContent = now.toLocaleDateString("ro-RO", { day:"2-digit", month:"long", year:"numeric" });
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    async function incarcaProfil() {
+      const id    = localStorage.getItem("cc_medic_id") || "--";
+      const nume  = localStorage.getItem("cc_medic_nume") || "Medic";
+      const email = localStorage.getItem("cc_medic_email") || "--";
+
+      document.getElementById("profileId").textContent = id;
+      document.getElementById("profileEmail").textContent = email;
+      document.getElementById("profileNume").textContent = nume;
+      document.getElementById("profileNume2").textContent = nume;
+      document.getElementById("avatar").textContent = nume.charAt(0).toUpperCase();
+
+      try {
+        const r = await fetch(`${BASE_URL}/api/pacienti/lista/${id}`);
+        const pacienti = await r.json();
+        document.getElementById("profilePacienti").textContent =
+          Array.isArray(pacienti) ? pacienti.length + " pacienți" : "--";
+      } catch(e) {
+        document.getElementById("profilePacienti").textContent = "--";
+      }
+    }
+
+    incarcaProfil();
+  </script>
+</body>
+</html>

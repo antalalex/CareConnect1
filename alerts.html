@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareConect - Alerte</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="url(#hgrad)"/><defs><linearGradient id="hgrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><path d="M24 36s-11-7.5-11-14a7 7 0 0 1 11-5.74A7 7 0 0 1 35 22c0 6.5-11 14-11 14z" fill="white"/><polyline points="17,22 20,22 22,18 24,26 26,20 28,22 31,22" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div>
+        <h1>CareConect</h1>
+        <p>Monitorizare medicală în timp real pentru puls, temperatură și ECG.</p>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <a href="index.html" class="">Pacienți</a>
+      <a href="alerts.html" class="active">Alerte</a>
+      <a href="history.html" class="">Istoric pacient</a>
+      <a href="#" onclick="logout(); return false;">Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h2>Alerte</h2>
+        <p>Semnalări automate pentru puls, temperatură și ECG anormal.</p>
+      </div>
+
+            <a href="profile.html" class="profile-header-btn" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:14px;padding:10px 18px;text-decoration:none;box-shadow:var(--shadow)">
+        <div id="avatarHeader" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:white">M</div>
+        <div>
+          <strong id="headerNume" style="display:block;font-size:14px;color:var(--text);font-weight:800">Medic</strong>
+          <span style="font-size:11px;color:var(--muted)">ID: <span id="headerId">--</span></span>
+        </div>
+      </a>
+    </header>
+
+    <section class="stats-grid alert-stats">
+      <article class="stat-card">
+        <p>Alerte totale</p>
+        <strong class="red" id="alertTotal">3</strong>
+        <span>active</span>
+      </article>
+
+      <article class="stat-card">
+        <p>Puls ridicat</p>
+        <strong class="red" id="alertPuls">0</strong>
+        <span>pacient</span>
+      </article>
+
+      <article class="stat-card">
+        <p>Temperatură</p>
+        <strong class="green" id="alertTemp">0</strong>
+        <span>în monitorizare</span>
+      </article>
+
+      <article class="stat-card">
+        <p>ECG anormal</p>
+        <strong class="purple" id="alertEcg">0</strong>
+        <span>detectat</span>
+      </article>
+    </section>
+
+    <section class="panel alerts-page-panel">
+      <div class="page-section-head">
+        <div>
+          <h2>Lista alertelor</h2>
+          <p>Prioritatea mare necesită verificare medicală rapidă.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="alert-clear-btn" onclick="clearAllAlerts()">Șterge toate</button>
+          
+        </div>
+      </div>
+
+      <div class="alerts-full-list" id="alertsFullList"></div>
+    </section>
+  </main>
+
+  <script>
+  if (!localStorage.getItem("cc_medic_id")) window.location.href = "login.html";
+</script>
+  <script>
+    (function() {
+      const nume = localStorage.getItem("cc_medic_nume") || "Medic";
+      const id   = localStorage.getItem("cc_medic_id") || "--";
+      const el = document.getElementById("headerNume");
+      const av = document.getElementById("avatarHeader");
+      const hid = document.getElementById("headerId");
+      if (el) el.textContent = nume;
+      if (av) av.textContent = nume.charAt(0).toUpperCase();
+      if (hid) hid.textContent = id;
+    })();
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

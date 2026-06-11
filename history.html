@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareConect - Istoric pacient</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="url(#hgrad)"/><defs><linearGradient id="hgrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><path d="M24 36s-11-7.5-11-14a7 7 0 0 1 11-5.74A7 7 0 0 1 35 22c0 6.5-11 14-11 14z" fill="white"/><polyline points="17,22 20,22 22,18 24,26 26,20 28,22 31,22" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div>
+        <h1>CareConect</h1>
+        <p>Monitorizare medicală în timp real pentru puls, temperatură și ECG.</p>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <a href="index.html" class="">Pacienți</a>
+      <a href="alerts.html" class="">Alerte</a>
+      <a href="history.html" class="active">Istoric pacient</a>
+      <a href="#" onclick="logout(); return false;">Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h2>Istoric pacient</h2>
+        <p>Vizualizare istoric pentru puls, temperatură și status ECG.</p>
+      </div>
+
+      <label class="select-box">
+        <span>Selectează pacient</span>
+        <select id="historyPatientSelect">
+          <option value="0">Ion Popescu</option>
+          <option value="1">Maria Ionescu</option>
+          <option value="2">Andrei Vasilescu</option>
+          <option value="3">Elena Georgescu</option>
+          <option value="4">Mihai Dumitrescu</option>
+        </select>
+      </label>
+    </header>
+
+    <section class="history-hero panel">
+      <div>
+        <h2 id="historyPatientName">Ion Popescu</h2>
+        <p id="historyPatientDetails">68 ani • Status: Normal</p>
+      </div>
+      <div class="history-summary">
+        <div>
+          <span>Ultimul puls</span>
+          <strong id="historyAvgPulse">72 bpm</strong>
+        </div>
+        <div>
+          <span>Ultima temperatură</span>
+          <strong id="historyAvgTemp">36.6 °C</strong>
+        </div>
+        <div>
+          <span>Ultimul ECG</span>
+          <strong id="historyLastEcg">Normal</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="page-section-head">
+        <div>
+          <h2>Măsurători salvate</h2>
+          <p>Ultimele valori înregistrate de dispozitiv.</p>
+        </div>
+      </div>
+
+      <div class="history-table" id="historyTable"></div>
+    </section>
+  </main>
+
+  <script>
+  if (!localStorage.getItem("cc_medic_id")) window.location.href = "login.html";
+</script>
+  <script>
+    (function() {
+      const nume = localStorage.getItem("cc_medic_nume") || "Medic";
+      const id   = localStorage.getItem("cc_medic_id") || "--";
+      const el = document.getElementById("headerNume");
+      const av = document.getElementById("avatarHeader");
+      const hid = document.getElementById("headerId");
+      if (el) el.textContent = nume;
+      if (av) av.textContent = nume.charAt(0).toUpperCase();
+      if (hid) hid.textContent = id;
+    })();
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
