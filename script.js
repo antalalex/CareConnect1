@@ -117,20 +117,22 @@ async function loadAlerteDinAPI() {
     alerts = data.map(a => {
       let time = "--";
       try {
-        const d = new Date((a.timp.includes("Z") ? a.timp : a.timp + "Z"));
+        const timp = a.dataOra || a.timp || "";
+        const d = new Date((timp.includes("Z") ? timp : timp + "Z"));
         time = d.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
       } catch(e) {}
 
-      const color = a.tip && (a.tip.toLowerCase().includes("puls") || a.tip.toLowerCase().includes("ecg") || a.tip.toLowerCase().includes("febr")) ? "red" : "orange";
+      const tip = a.tipAnomalie || a.tip || "Alertă";
+      const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
 
       return {
         id: a.id,
         name: a.numePacient || "Pacient",
-        text: a.valoare || a.tip || "Alertă",
+        text: a.valoare || tip,
         time,
         color,
         priority: "Mare",
-        type: a.tip || "Alertă"
+        type: tip
       };
     });
   } catch(e) {}
