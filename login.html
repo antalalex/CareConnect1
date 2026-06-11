@@ -9,7 +9,6 @@
     .login-line{display:none!important;}
     .register-link-inline{text-align:center;margin-top:18px;font-size:14px;color:#64748b;}
     .register-link-inline a{color:#2563eb;text-decoration:none;font-weight:800;}
-    .register-link-inline a:hover{text-decoration:underline;}
     .login-error{color:#dc2626;font-size:13px;margin-top:8px;display:none;}
   </style>
 </head>
@@ -20,54 +19,38 @@
       <h1>Monitorizare medicală inteligentă</h1>
       <p>Platformă pentru urmărirea pacienților prin puls, temperatură și ECG în timp real.</p>
     </div>
-
     <form class="login-form" onsubmit="event.preventDefault(); doLogin();">
       <h2>Autentificare medic</h2>
       <p>Intră în dashboard pentru monitorizarea pacienților.</p>
-
       <label>Email medic</label>
       <input type="email" id="loginEmail" placeholder="medic@email.com" required />
-
       <label>Parolă</label>
       <input type="password" id="loginParola" placeholder="••••••••" required />
-
       <div class="login-error" id="loginError">Email sau parolă incorecte.</div>
-
       <button type="submit" id="loginBtn">Intră în aplicație</button>
-
       <div class="register-link-inline">
         Nu ai cont? <a href="register.html">Creează cont</a>
       </div>
     </form>
   </section>
-
   <script>
     const BASE_URL = "https://careconnectapi2026-crc6ehajfgbvc3c3.polandcentral-01.azurewebsites.net";
-    async function proxyFetch(url, options = {}) {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      return fetch(proxyUrl, options);
-    }
-
     if (localStorage.getItem("cc_medic_id")) window.location.href = "index.html";
-
     async function doLogin() {
       const email  = document.getElementById("loginEmail").value.trim();
       const parola = document.getElementById("loginParola").value.trim();
       const btn    = document.getElementById("loginBtn");
       const err    = document.getElementById("loginError");
-
       btn.textContent = "Se verifică...";
       btn.disabled = true;
       err.style.display = "none";
-
       try {
         const url = `${BASE_URL}/api/doctori/login?email=${encodeURIComponent(email)}&parola=${encodeURIComponent(parola)}`;
-        const r = await proxyFetch(url, { method: "POST" });
+        const r = await fetch(url, { method: "POST" });
         const body = await r.json();
-
         if (r.ok && body.idMedic) {
           localStorage.setItem("cc_medic_id",   body.idMedic);
-          localStorage.setItem("cc_medic_nume",  body.nume || email);
+          localStorage.setItem("cc_medic_nume",  body.nume || body.name || "Medic");
           localStorage.setItem("cc_medic_email", email);
           window.location.href = "index.html";
         } else {
@@ -76,7 +59,7 @@
           btn.disabled = false;
         }
       } catch(e) {
-        err.textContent = "Eroare conexiune. Încearcă din nou.";
+        err.textContent = "Eroare: " + e.message;
         err.style.display = "block";
         btn.textContent = "Intră în aplicație";
         btn.disabled = false;
