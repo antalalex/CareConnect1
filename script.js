@@ -532,6 +532,7 @@ function animate(timestamp) {
 
 function updatePatient() {
   const p = patients[activePatient]; if (!p) return;
+  const hasData = p.bpm > 0 && p.temp > 0;
 
   // Puls
   setHTML("pulseValue", hasData ? `${p.bpm} <em>bpm</em>` : `--- <em>bpm</em>`);
