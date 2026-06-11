@@ -142,16 +142,6 @@ async function loadIstoricDinAPI(patientIdx) {
     if (last.temp > 0) patients[patientIdx].temp = last.temp;
     patients[patientIdx].ecg = last.ecg;
 
-    // Actualizeaza timestamp doar daca prima inregistrare s-a schimbat
-    if (patientIdx === activePatient && last.bpm > 0) {
-      // Foloseste si indexul primei inregistrari ca sa detecteze date noi
-      const key = last.date + "_" + last.bpm + "_" + last.temp + "_" + newHistory.length;
-      if (key !== lastKnownFirstEntry) {
-        lastKnownFirstEntry = key;
-        lastDataReceivedTime = Date.now();
-      }
-    }
-
     // Actualizeaza bufferele grafice daca e pacientul activ
     if (patientIdx === activePatient) {
       const vals = newHistory.slice(0, 50).reverse();
@@ -397,14 +387,8 @@ function drawECG() {
   const w = c.clientWidth * r, h = c.clientHeight * r;
   c.width = w; c.height = h;
 
-  // Genereaza puncte doar daca exista date live
-  const hasLiveData = lastDataReceivedTime > 0 && (Date.now() - lastDataReceivedTime) < 10000;
-  if (hasLiveData) {
-    ecgWaveBuffer.push(generateEcgPoint(ecgPhaseLocal++));
-    while (ecgWaveBuffer.length > 120) ecgWaveBuffer.shift();
-  } else {
-    ecgWaveBuffer.length = 0;
-  }
+  ecgWaveBuffer.push(generateEcgPoint(ecgPhaseLocal++));
+  while (ecgWaveBuffer.length > 120) ecgWaveBuffer.shift();
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = "#071B3D";
@@ -534,9 +518,6 @@ function stopWebDemo() {
 }
 
 let lastEcgTime = 0;
-let lastDataReceivedTime = 0;
-let lastKnownFirstEntry = null;
-const pageLoadTime = Date.now(); // momentul cand s-a deschis pagina
 function animate(timestamp) {
   // ECG se actualizeaza la ~80ms (ca in aplicatia Android)
   if (timestamp - lastEcgTime >= 80) {
@@ -544,29 +525,13 @@ function animate(timestamp) {
     drawECG();
     lastEcgTime = timestamp;
   }
-  const hasLiveNow = lastDataReceivedTime > 0 && (Date.now() - lastDataReceivedTime) < 10000;
-  if (hasLiveNow) {
-    drawSmallChart(g("pulseChart"), pulseBuffer, 40, 140, "#2563eb");
-    drawSmallChart(g("tempChart"), tempBuffer, 35, 40, "#22c55e");
-  } else {
-    // Sterge graficele daca nu sunt date live
-    const pc = g("pulseChart"); if (pc) { const ctx = pc.getContext("2d"); ctx.clearRect(0,0,pc.width,pc.height); }
-    const tc = g("tempChart");  if (tc) { const ctx = tc.getContext("2d"); ctx.clearRect(0,0,tc.width,tc.height); }
-  }
+  drawSmallChart(g("pulseChart"), pulseBuffer, 40, 140, "#2563eb");
+  drawSmallChart(g("tempChart"), tempBuffer, 35, 40, "#22c55e");
   requestAnimationFrame(animate);
 }
 
 function updatePatient() {
   const p = patients[activePatient]; if (!p) return;
-  // Verifica daca s-au primit date in ultimele 10 secunde
-  const hasData = lastDataReceivedTime > 0 && (Date.now() - lastDataReceivedTime) < 10000;
-
-  // Reseteaza bufferele daca nu sunt date live
-  if (!hasData) {
-    pulseBuffer.fill(0);
-    tempBuffer.fill(0);
-    ecgWaveBuffer.length = 0;
-  }
 
   // Puls
   setHTML("pulseValue", hasData ? `${p.bpm} <em>bpm</em>` : `--- <em>bpm</em>`);
@@ -1049,8 +1014,6 @@ document.addEventListener("DOMContentLoaded", function() {
     if (e.key === "Escape") { closeMedModal(); closeFisaModal(); }
   });
 
-  lastDataReceivedTime = 0;
-  lastKnownFirstEntry = null;
   updateTime();
   setInterval(updateTime, 1000);
   animate();
@@ -1070,12 +1033,6 @@ document.addEventListener("DOMContentLoaded", function() {
     for (let i = 0; i < patients.length; i++) {
       await loadIstoricDinAPI(i);
     }
-    // Seteaza lastKnownFirstEntry cu datele existente fara a marca ca "live"
-    const h0 = histories[activePatient];
-    if (h0 && h0.length > 0) {
-      lastKnownFirstEntry = h0[0].date + "_" + h0[0].bpm + "_" + h0[0].temp + "_" + h0.length;
-    }
-    lastDataReceivedTime = 0; // Nu considera datele vechi ca live
     // Opreste demo-ul dupa ce s-au incarcat datele reale
     stopWebDemo();
     updatePatient();
