@@ -181,7 +181,7 @@ function renderAlerts() {
     <div class="alert-row">
       <span class="dot ${a.color}"></span>
       <div><strong>${a.name}</strong><span>${a.text}</span></div>
-      <strong class="alert-time">${a.time}</strong>
+
     </div>`).join("");
 }
 
@@ -191,7 +191,7 @@ function renderAlertsFull() {
   l.innerHTML = alerts.map(a => `
     <div class="alert-full-card">
       <span class="dot ${a.color}"></span>
-      <div><h3>${a.type}</h3><p><strong>${a.name}</strong> — ${a.text} • ${a.time}</p></div>
+      <div><h3>${a.type}</h3><p><strong>${a.name}</strong></p></div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span class="priority ${a.priority==="Mare"?"high":"medium"}">${a.priority}</span>
         <button class="alert-delete-btn" onclick="deleteAlert(${a.id})" title="Șterge alertă">
