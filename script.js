@@ -639,17 +639,17 @@ function renderAlertsFull() {
 function renderHistory() {
   const sel=g("historyPatientSelect"), tbl=g("historyTable");
   if (!sel||!tbl) return;
+  if (!patients.length) {
+    tbl.innerHTML=`<div class="med-empty">Nu sunt pacienți înregistrați.</div>`;
+    return;
+  }
   const i=Number(sel.value), p=patients[i], h=histories[i]||[];
-  if (!p) return;
-  const set=(id,v)=>{const e=g(id);if(e)e.textContent=v;};
-  set("historyPatientName",    p.name);
-  set("historyPatientDetails", `${p.age} ani • Status: ${computeStatus(p.bpm,p.temp,p.ecg)}`);
-  // Ultima valoare înregistrată, nu media
-  set("historyAvgPulse",  h.length?`${h[0].bpm} bpm`:"—");
-  set("historyAvgTemp",   h.length?`${h[0].temp.toFixed(1)} °C`:"—");
-  set("historyLastEcg",   h.length?h[0].ecg:"—");
+  if (!p) {
+    tbl.innerHTML=`<div class="med-empty">Selectează un pacient.</div>`;
+    return;
+  }
   if (!h.length) {
-    tbl.innerHTML=`<div class="med-empty">Nicio înregistrare salvată pentru acest pacient.</div>`;
+    tbl.innerHTML=`<div class="med-empty">Nicio înregistrare salvată pentru ${p.name}.</div>`;
     return;
   }
   tbl.innerHTML=`

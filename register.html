@@ -72,12 +72,7 @@
 
   <script>
     const BASE_URL = "https://careconnectapi2026-crc6ehajfgbvc3c3.polandcentral-01.azurewebsites.net";
-    async function proxyFetch(url, options = {}) {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      return fetch(proxyUrl, options);
-    }
-
-    async function doRegister() {
+async function doRegister() {
       const nume   = document.getElementById("regNume").value.trim();
       const spec   = document.getElementById("regSpec").value.trim();
       const tel    = document.getElementById("regTel").value.trim();
@@ -102,7 +97,7 @@
 
       try {
         const url = `${BASE_URL}/api/doctori/register?nume=${encodeURIComponent(nume)}&specializare=${encodeURIComponent(spec)}&telefon=${encodeURIComponent(tel)}&email=${encodeURIComponent(email)}&parola=${encodeURIComponent(parola)}`;
-        const r = await proxyFetch(url, { method: "POST" });
+        const r = await fetch(url, { method: "POST" });
 
         if (r.ok) {
           document.getElementById("registerFields").style.display = "none";
