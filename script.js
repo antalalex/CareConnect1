@@ -43,15 +43,8 @@ function showToast(msg, type="success") {
 let patients = [], medications = [], histories = [];
 let activePatient = 0;
 let alerts = [], alertIdCounter = 0;
-let dismissedAlertKeys = [];
 
-// Incarca dismissed din localStorage
-const savedDismissed = localStorage.getItem("cc_dismissed_alerts");
-if (savedDismissed) dismissedAlertKeys = JSON.parse(savedDismissed);
 
-function saveDismissed() {
-  localStorage.setItem("cc_dismissed_alerts", JSON.stringify(dismissedAlertKeys));
-}
 
 // ── API ──
 async function loadPacientiDinAPI() {
@@ -113,47 +106,49 @@ async function loadIstoricDinAPI(idx) {
   } catch(e) {}
 }
 
-// ── Alerts ──
-function alertKey(type, idx) { return `${type}-${idx}`; }
+// ── Alerts din API ──
+async function loadAlerteDinAPI() {
+  try {
+    const r = await fetch(`${BASE_URL}/api/alerte/${getMedicId()}`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!Array.isArray(data)) return;
 
-function generateAlerts() {
-  const now = new Date().toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
-  const newAlerts = [];
+    alerts = data.map(a => {
+      let time = "--";
+      try {
+        const d = new Date((a.timp.includes("Z") ? a.timp : a.timp + "Z"));
+        time = d.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
+      } catch(e) {}
 
-  patients.forEach((p, i) => {
-    if (!p.bpm || !p.temp) return;
+      const color = a.tip && (a.tip.toLowerCase().includes("puls") || a.tip.toLowerCase().includes("ecg") || a.tip.toLowerCase().includes("febr")) ? "red" : "orange";
 
-    const checks = [];
-    if (p.ecg === "Anormal")   checks.push({ key: alertKey("ecg", i),    text: "ECG anormal detectat",        color:"red",    priority:"Mare",  type:"ECG anormal" });
-    if (p.bpm > 100)           checks.push({ key: alertKey("puls-h", i), text: `Puls ridicat: ${p.bpm} bpm`,  color:"red",    priority:"Mare",  type:"Puls ridicat" });
-    else if (p.bpm < 50)       checks.push({ key: alertKey("puls-l", i), text: `Puls scăzut: ${p.bpm} bpm`,  color:"orange", priority:"Mare",  type:"Puls scăzut" });
-    if (p.temp >= 38.0)        checks.push({ key: alertKey("febra", i),  text: `Febră: ${p.temp.toFixed(1)}°C`, color:"red",  priority:"Mare",  type:"Febră" });
-    else if (p.temp >= 37.5)   checks.push({ key: alertKey("subf", i),   text: `Subfebrilitate: ${p.temp.toFixed(1)}°C`, color:"orange", priority:"Medie", type:"Temperatură" });
-
-    checks.forEach(c => {
-      const exists = alerts.find(a => a.key === c.key);
-      if (exists) newAlerts.push(exists);
-      else if (!dismissedAlertKeys.includes(c.key))
-        newAlerts.push({ id: ++alertIdCounter, patientIdx: i, name: p.name, text: c.text, time: now, color: c.color, priority: c.priority, type: c.type, key: c.key });
+      return {
+        id: a.id,
+        name: a.numePacient || "Pacient",
+        text: a.valoare || a.tip || "Alertă",
+        time,
+        color,
+        priority: "Mare",
+        type: a.tip || "Alertă"
+      };
     });
-  });
-
-  alerts = newAlerts;
+  } catch(e) {}
 }
 
-function deleteAlert(id) {
-  const a = alerts.find(x => x.id === id);
-  if (a) { dismissedAlertKeys.push(a.key); saveDismissed(); }
+async function deleteAlert(id) {
+  try {
+    await fetch(`${BASE_URL}/api/alerte/dismiss/${id}`, { method: "POST" });
+  } catch(e) {}
   alerts = alerts.filter(x => x.id !== id);
   renderAlerts(); renderAlertsFull(); updateStatCards();
 }
 
-function clearAllAlerts() {
+async function clearAllAlerts() {
   if (!alerts.length) return;
   if (!confirm("Ștergi toate alertele?")) return;
-  alerts.forEach(a => dismissedAlertKeys.push(a.key));
+  await Promise.all(alerts.map(a => fetch(`${BASE_URL}/api/alerte/dismiss/${a.id}`, { method: "POST" }).catch(()=>{})));
   alerts = [];
-  saveDismissed();
   renderAlerts(); renderAlertsFull(); updateStatCards();
 }
 
@@ -253,6 +248,9 @@ function renderQuickPatients() {
             <span>${p.age} ani &nbsp;·&nbsp; ${p.diagnostic}</span>
           </div>
           <span class="status ${statusClass(status)}">${status}</span>
+          <button class="qpc2-action-btn qpc2-blue-btn" onclick="openFisaModal(${i})" title="Fișă pacient">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
         </div>
         <div class="qpc2-divider"></div>
         <div class="qpc2-bottom">
@@ -325,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function() {
       updateStatCards();
     }
     for (let i = 0; i < patients.length; i++) await loadIstoricDinAPI(i);
-    generateAlerts();
+    await loadAlerteDinAPI();
     renderAlerts();
     renderAlertsFull();
     renderHistory();
@@ -337,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function() {
   setInterval(async () => {
     await loadPacientiDinAPI();
     for (let i = 0; i < patients.length; i++) await loadIstoricDinAPI(i);
-    generateAlerts();
+    await loadAlerteDinAPI();
     renderAlerts();
     renderAlertsFull();
     renderQuickPatients();
@@ -345,3 +343,25 @@ document.addEventListener("DOMContentLoaded", function() {
     updateStatCards();
   }, 5000);
 });
+
+// ── Fișă pacient (readonly) ──
+let fisaPatientIdx = -1;
+
+function openFisaModal(idx) {
+  fisaPatientIdx = idx;
+  const p = patients[idx];
+  const t = g("fisaModalTitle"); if (t) t.textContent = `Fișă pacient — ${p.name}`;
+  const setVal = (id, v) => { const e = g(id); if (e) e.value = v; };
+  setVal("fisaName", p.name || "");
+  setVal("fisaAge",  p.age  || "");
+  setVal("fisaDiag", p.diagnostic || "");
+  setVal("fisaEcg",  p.ecg || "Normal");
+  g("fisaModalOverlay")?.classList.add("active");
+  g("fisaModal")?.classList.add("active");
+}
+
+function closeFisaModal() {
+  g("fisaModalOverlay")?.classList.remove("active");
+  g("fisaModal")?.classList.remove("active");
+  fisaPatientIdx = -1;
+}
