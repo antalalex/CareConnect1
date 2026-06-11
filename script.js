@@ -126,7 +126,7 @@ async function loadAlerteDinAPI() {
       const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
 
       return {
-        id: a.id,
+        id: a.id || a.idPacient,
         name: a.numePacient || "Pacient",
         text: a.valoare || tip,
         time,
