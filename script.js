@@ -107,6 +107,12 @@ async function loadIstoricDinAPI(idx) {
 }
 
 // ── Alerts din API ──
+const dismissedAlerts = new Set(JSON.parse(localStorage.getItem("cc_dismissed_v2") || "[]"));
+
+function saveDismissed() {
+  localStorage.setItem("cc_dismissed_v2", JSON.stringify([...dismissedAlerts]));
+}
+
 async function loadAlerteDinAPI() {
   try {
     const r = await fetch(`${BASE_URL}/api/alerte/${getMedicId()}`);
@@ -114,42 +120,36 @@ async function loadAlerteDinAPI() {
     const data = await r.json();
     if (!Array.isArray(data)) return;
 
-    alerts = data.map(a => {
-      let time = "--";
-      try {
-        const timp = a.dataOra || a.timp || "";
-        const d = new Date((timp.includes("Z") ? timp : timp + "Z"));
-        time = d.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
-      } catch(e) {}
-
-      const tip = a.tipAnomalie || a.tip || "Alertă";
-      const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
-
-      return {
-        id: a.id || a.idPacient,
-        name: a.numePacient || "Pacient",
-        text: a.valoare || tip,
-        time,
-        color,
-        priority: "Mare",
-        type: tip
-      };
-    });
+    alerts = data
+      .map(a => {
+        const tip = a.tipAnomalie || a.tip || "Alertă";
+        const key = `${a.idPacient}-${tip}`;
+        const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
+        return {
+          id: key,
+          name: a.numePacient || "Pacient",
+          text: a.valoare || tip,
+          color,
+          priority: "Mare",
+          type: "Valori anormale"
+        };
+      })
+      .filter(a => !dismissedAlerts.has(a.id));
   } catch(e) {}
 }
 
-async function deleteAlert(id) {
-  try {
-    await fetch(`${BASE_URL}/api/alerte/dismiss/${id}`, { method: "POST" });
-  } catch(e) {}
+function deleteAlert(id) {
+  dismissedAlerts.add(id);
+  saveDismissed();
   alerts = alerts.filter(x => x.id !== id);
   renderAlerts(); renderAlertsFull(); updateStatCards();
 }
 
-async function clearAllAlerts() {
+function clearAllAlerts() {
   if (!alerts.length) return;
   if (!confirm("Ștergi toate alertele?")) return;
-  await Promise.all(alerts.map(a => fetch(`${BASE_URL}/api/alerte/dismiss/${a.id}`, { method: "POST" }).catch(()=>{})));
+  alerts.forEach(a => dismissedAlerts.add(a.id));
+  saveDismissed();
   alerts = [];
   renderAlerts(); renderAlertsFull(); updateStatCards();
 }
