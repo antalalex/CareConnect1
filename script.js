@@ -179,9 +179,7 @@ function updateStatCards() {
   if (tp) tp.textContent = patients.length > 0 ? patients.length : "--";
   if (aa) aa.textContent = patients.length > 0 ? alerts.length : "--";
   const at = g("alertTotal"); if (at) at.textContent = alerts.length;
-  const ap = g("alertPuls"); if (ap) ap.textContent = alerts.filter(a => a.type === "Puls ridicat" || a.type === "Puls scăzut").length;
-  const atemp = g("alertTemp"); if (atemp) atemp.textContent = alerts.filter(a => a.type === "Temperatură" || a.type === "Febră").length;
-  const ae = g("alertEcg"); if (ae) ae.textContent = alerts.filter(a => a.type === "ECG anormal").length;
+
 }
 
 function populateSelects() {
@@ -210,7 +208,7 @@ function renderAlertsFull() {
   l.innerHTML = alerts.map(a => `
     <div class="alert-full-card">
       <span class="dot ${a.color}"></span>
-      <div><h3>${a.type}</h3><p><strong>${a.name}</strong></p></div>
+      <div><h3>${a.type}</h3><p><strong>${a.name}</strong> — ${a.text} • ${a.time}</p></div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span class="priority ${a.priority==="Mare"?"high":"medium"}">${a.priority}</span>
       </div>
