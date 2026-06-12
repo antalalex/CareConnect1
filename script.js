@@ -114,33 +114,47 @@ function saveDismissed() {
 }
 
 async function loadAlerteDinAPI() {
+  let apiAlerts = [];
   try {
     const r = await fetch(`${BASE_URL}/api/alerte/${getMedicId()}`);
-    if (!r.ok) return;
-    const data = await r.json();
-    if (!Array.isArray(data)) return;
-
-    alerts = data
-      .map(a => {
-        const tip = a.tipAnomalie || a.tip || "Alertă";
-        let minuteKey = "";
-        try {
-          const d = new Date((a.dataOra.includes("Z") ? a.dataOra : a.dataOra + "Z"));
-          minuteKey = d.toISOString().slice(0,16); // yyyy-MM-ddTHH:mm
-        } catch(e) {}
-        const key = `${a.idPacient}-${tip}-${minuteKey}`;
-        const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
-        return {
-          id: key,
-          name: a.numePacient || "Pacient",
-          text: a.valoare || tip,
-          color,
-          priority: "Mare",
-          type: "Valori anormale"
-        };
-      })
-      .filter(a => !dismissedAlerts.has(a.id));
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data)) {
+        apiAlerts = data.map(a => {
+          const tip = a.tipAnomalie || a.tip || "Alertă";
+          let minuteKey = "";
+          try {
+            const d = new Date((a.dataOra.includes("Z") ? a.dataOra : a.dataOra + "Z"));
+            minuteKey = d.toISOString().slice(0,16);
+          } catch(e) {}
+          const key = `${a.idPacient}-${tip}-${minuteKey}`;
+          const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
+          return { id: key, name: a.numePacient || "Pacient", text: a.valoare || tip, color, priority: "Mare", type: "Valori anormale" };
+        });
+      }
+    }
   } catch(e) {}
+
+  // Genereaza si alerte locale din valorile curente ale pacientilor
+  const now = new Date();
+  const minuteKey = now.toISOString().slice(0,16);
+  const localAlerts = [];
+  patients.forEach(p => {
+    if (!p.bpm || !p.temp) return;
+    const checks = [];
+    if (p.ecg === "Anormal") checks.push({ tip: "ECG anormal", text: "ECG anormal detectat", color: "red" });
+    if (p.bpm > 100) checks.push({ tip: "Puls ridicat", text: `${p.bpm} bpm`, color: "red" });
+    else if (p.bpm < 50) checks.push({ tip: "Puls scăzut", text: `${p.bpm} bpm`, color: "orange" });
+    if (p.temp >= 38.0) checks.push({ tip: "Febră", text: `${p.temp.toFixed(1)} °C`, color: "red" });
+    else if (p.temp >= 37.5) checks.push({ tip: "Subfebrilitate", text: `${p.temp.toFixed(1)} °C`, color: "orange" });
+
+    checks.forEach(c => {
+      const key = `${p.id}-${c.tip}-${minuteKey}`;
+      localAlerts.push({ id: key, name: p.name, text: c.text, color: c.color, priority: "Mare", type: "Valori anormale" });
+    });
+  });
+
+  alerts = [...apiAlerts, ...localAlerts].filter(a => !dismissedAlerts.has(a.id));
 }
 
 function deleteAlert(id) {
@@ -199,6 +213,9 @@ function renderAlertsFull() {
       <div><h3>${a.type}</h3><p><strong>${a.name}</strong></p></div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span class="priority ${a.priority==="Mare"?"high":"medium"}">${a.priority}</span>
+        <button class="alert-delete-btn" onclick="deleteAlert('${a.id}')" title="Șterge alertă">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
     </div>`).join("");
 }
