@@ -123,7 +123,12 @@ async function loadAlerteDinAPI() {
     alerts = data
       .map(a => {
         const tip = a.tipAnomalie || a.tip || "Alertă";
-        const key = `${a.idPacient}-${tip}`;
+        let minuteKey = "";
+        try {
+          const d = new Date((a.dataOra.includes("Z") ? a.dataOra : a.dataOra + "Z"));
+          minuteKey = d.toISOString().slice(0,16); // yyyy-MM-ddTHH:mm
+        } catch(e) {}
+        const key = `${a.idPacient}-${tip}-${minuteKey}`;
         const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
         return {
           id: key,
