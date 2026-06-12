@@ -129,7 +129,12 @@ async function loadAlerteDinAPI() {
           } catch(e) {}
           const key = `${a.idPacient}-${tip}-${minuteKey}`;
           const color = tip.toLowerCase().includes("puls") || tip.toLowerCase().includes("ecg") || tip.toLowerCase().includes("febr") ? "red" : "orange";
-          return { id: key, name: a.numePacient || "Pacient", text: a.valoare || tip, color, priority: "Mare", type: "Valori anormale" };
+          let time = "--";
+          try {
+            const dt = new Date((a.dataOra.includes("Z") ? a.dataOra : a.dataOra + "Z"));
+            time = dt.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
+          } catch(e) {}
+          return { id: key, name: a.numePacient || "Pacient", time, color, priority: "Mare", type: "Valori anormale" };
         });
       }
     }
@@ -148,9 +153,10 @@ async function loadAlerteDinAPI() {
     if (p.temp >= 38.0) checks.push({ tip: "Febră", text: `${p.temp.toFixed(1)} °C`, color: "red" });
     else if (p.temp >= 37.5) checks.push({ tip: "Subfebrilitate", text: `${p.temp.toFixed(1)} °C`, color: "orange" });
 
+    const nowTime = now.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
     checks.forEach(c => {
       const key = `${p.id}-${c.tip}-${minuteKey}`;
-      localAlerts.push({ id: key, name: p.name, text: c.text, color: c.color, priority: "Mare", type: "Valori anormale" });
+      localAlerts.push({ id: key, name: p.name, time: nowTime, color: c.color, priority: "Mare", type: "Valori anormale" });
     });
   });
 
@@ -197,7 +203,8 @@ function renderAlerts() {
   l.innerHTML = alerts.map(a => `
     <div class="alert-row">
       <span class="dot ${a.color}"></span>
-      <div><strong>${a.name}</strong><span>${a.text}</span></div>
+      <div><strong>${a.name}</strong></div>
+      <strong class="alert-time">${a.time}</strong>
 
     </div>`).join("");
 }
@@ -208,7 +215,7 @@ function renderAlertsFull() {
   l.innerHTML = alerts.map(a => `
     <div class="alert-full-card">
       <span class="dot ${a.color}"></span>
-      <div><h3>${a.type}</h3><p><strong>${a.name}</strong> — ${a.text} • ${a.time}</p></div>
+      <div><h3>${a.type}</h3><p><strong>${a.name}</strong> • ${a.time}</p></div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span class="priority ${a.priority==="Mare"?"high":"medium"}">${a.priority}</span>
       </div>
