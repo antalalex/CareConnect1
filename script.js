@@ -140,27 +140,7 @@ async function loadAlerteDinAPI() {
     }
   } catch(e) {}
 
-  // Genereaza si alerte locale din valorile curente ale pacientilor
-  const now = new Date();
-  const minuteKey = now.toISOString().slice(0,16);
-  const localAlerts = [];
-  patients.forEach(p => {
-    if (!p.bpm || !p.temp) return;
-    const checks = [];
-    if (p.ecg === "Anormal") checks.push({ tip: "ECG anormal", text: "ECG anormal detectat", color: "red" });
-    if (p.bpm > 100) checks.push({ tip: "Puls ridicat", text: `${p.bpm} bpm`, color: "red" });
-    else if (p.bpm < 50) checks.push({ tip: "Puls scăzut", text: `${p.bpm} bpm`, color: "orange" });
-    if (p.temp >= 38.0) checks.push({ tip: "Febră", text: `${p.temp.toFixed(1)} °C`, color: "red" });
-    else if (p.temp >= 37.5) checks.push({ tip: "Subfebrilitate", text: `${p.temp.toFixed(1)} °C`, color: "orange" });
-
-    const nowTime = now.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
-    checks.forEach(c => {
-      const key = `${p.id}-${c.tip}-${minuteKey}`;
-      localAlerts.push({ id: key, name: p.name, time: nowTime, color: c.color, priority: "Mare", type: "Valori anormale" });
-    });
-  });
-
-  alerts = [...apiAlerts, ...localAlerts].filter(a => !dismissedAlerts.has(a.id));
+  alerts = apiAlerts.filter(a => !dismissedAlerts.has(a.id));
 }
 
 function deleteAlert(id) {
