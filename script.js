@@ -213,9 +213,6 @@ function renderAlertsFull() {
       <div><h3>${a.type}</h3><p><strong>${a.name}</strong></p></div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span class="priority ${a.priority==="Mare"?"high":"medium"}">${a.priority}</span>
-        <button class="alert-delete-btn" onclick="deleteAlert('${a.id}')" title="Șterge alertă">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
       </div>
     </div>`).join("");
 }
