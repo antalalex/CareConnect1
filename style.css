@@ -2378,3 +2378,79 @@ footer {
   .live-hist-head span:nth-child(5),
   .live-hist-row span:nth-child(5) { display: none; }
 }
+
+/* ── Mobile (telefon) ── */
+@media (max-width: 480px) {
+  .main {
+    padding: 18px 12px;
+  }
+
+  .topbar h2 {
+    font-size: 22px;
+  }
+
+  .profile-header-btn {
+    padding: 8px 12px !important;
+  }
+
+  .profile-header-btn strong {
+    font-size: 13px !important;
+  }
+
+  .qpc2-top {
+    padding: 14px 14px 10px;
+    gap: 10px;
+  }
+
+  .qpc2-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+  }
+
+  .qpc2-identity strong {
+    font-size: 14px;
+  }
+
+  .qpc2-identity span {
+    font-size: 12px;
+  }
+
+  .qpc2-bottom {
+    padding: 12px 14px 14px;
+  }
+
+  .qpc2-vitals {
+    gap: 6px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .qpc2-vital-box {
+    min-width: 0;
+    flex: 1;
+    padding: 8px 6px;
+  }
+
+  .stats-grid > div,
+  .panel {
+    padding: 16px;
+  }
+
+  .history-row,
+  .history-head {
+    font-size: 12px;
+    grid-template-columns: 1fr !important;
+    gap: 4px;
+  }
+
+  .alert-full-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .select-box {
+    width: 100%;
+  }
+}
